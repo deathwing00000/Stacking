@@ -46,7 +46,7 @@ describe("Unit tests", function () {
       this.Staking = <Staking>(
         await staking.deploy(
           this.TKN.address,
-          1,
+          600,
           this.hre.ethers.utils.parseEther("100"),
           this.hre.ethers.utils.parseEther("0.1")
         )

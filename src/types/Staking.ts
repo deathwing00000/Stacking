@@ -49,7 +49,7 @@ export interface StakingInterface extends utils.Interface {
     "rewardTime()": FunctionFragment;
     "rewardValue()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "totalStacked()": FunctionFragment;
+    "totalStaked()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -113,7 +113,7 @@ export interface StakingInterface extends utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "totalStacked",
+    functionFragment: "totalStaked",
     values?: undefined
   ): string;
 
@@ -163,7 +163,7 @@ export interface StakingInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "totalStacked",
+    functionFragment: "totalStaked",
     data: BytesLike
   ): Result;
 
@@ -339,7 +339,7 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    totalStacked(overrides?: CallOverrides): Promise<[BigNumber]>;
+    totalStaked(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -410,7 +410,7 @@ export interface Staking extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  totalStacked(overrides?: CallOverrides): Promise<BigNumber>;
+  totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -475,7 +475,7 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    totalStacked(overrides?: CallOverrides): Promise<BigNumber>;
+    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   filters: {
@@ -630,7 +630,7 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    totalStacked(overrides?: CallOverrides): Promise<BigNumber>;
+    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -709,6 +709,6 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    totalStacked(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    totalStaked(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

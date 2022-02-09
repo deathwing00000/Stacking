@@ -21,7 +21,7 @@ contract Staking is AccessControl, Pausable {
 
     uint256 public rewardDistribution;
 
-    uint256 public totalStacked;
+    uint256 public totalStaked;
 
     uint256 public Tps;
 
@@ -67,22 +67,43 @@ contract Staking is AccessControl, Pausable {
         asset = _asset;
         rewardTime = _rewardTime;
         rewardValue = _rewardValue;
-        Tps = _Tps;
+        Tps = 0;
         lastUpdateTime = block.timestamp;
     }
 
     function UpdateTPS(uint256 lastAmount) private returns (uint256) {
-        uint256 testTotal = totalStacked;
-        if (totalStacked > lastAmount) {
+        uint256 testTotal = totalStaked;
+        /*if (totalStaked > lastAmount) {
             testTotal -= lastAmount;
         }
+
         if (block.timestamp - lastUpdateTime > rewardTime) {
+            console.log(block.timestamp);
+            console.log(lastUpdateTime);
+            console.log(rewardValue);
+            console.log(testTotal);
+            console.log(rewardTime);
+            console.log(
+                ((((block.timestamp - lastUpdateTime)) * rewardValue) *
+                    10**18) / (testTotal * rewardTime)
+            );
             Tps +=
-                ((block.timestamp - lastUpdateTime) * rewardValue) /
+                (((block.timestamp - lastUpdateTime) * rewardValue) * 10**18) /
                 (testTotal * rewardTime);
-            lastUpdateTime = block.timestamp - 2;
+            console.log(Tps);
+            lastUpdateTime = block.timestamp;
+        }*/
+        if (totalStaked > 0) {
+            Tps +=
+                (((block.timestamp - lastUpdateTime) * rewardValue) * 10**18) /
+                (totalStaked * rewardTime);
+            console.log("shit");
+            console.log(block.timestamp);
+            console.log(lastUpdateTime);
+            console.log(Tps);
+            lastUpdateTime = block.timestamp;
+            return (Tps);
         }
-        return (Tps);
     }
 
     /*function UpdateRewardDistribution(uint256 claimAmount)
@@ -93,6 +114,7 @@ contract Staking is AccessControl, Pausable {
     }*/
 
     function Stake(uint256 amount) external whenNotPaused {
+        Tps = UpdateTPS(amount);
         IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         Staker memory currentStaker;
         uint256 _rewardMissed = (amount * Tps) / 10**18;
@@ -117,9 +139,9 @@ contract Staking is AccessControl, Pausable {
             currentStaker.stake += amount;
         }
 
-        totalStacked += amount;
+        totalStaked += amount;
 
-        emit Staked(msg.sender, amount, UpdateTPS(amount), block.timestamp);
+        emit Staked(msg.sender, amount, Tps, block.timestamp);
     }
 
     function UnStake(uint256 amount, address to) external whenNotPaused {
@@ -136,7 +158,7 @@ contract Staking is AccessControl, Pausable {
         currentStaker.stake -= amount;
         currentStaker.rewardGained += amount * Tps;
 
-        totalStacked -= amount;
+        totalStaked -= amount;
 
         emit UnStaked(to, amount, UpdateTPS(amount), block.timestamp);
     }
