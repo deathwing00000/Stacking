@@ -13,21 +13,18 @@ contract Staking is AccessControl, Pausable {
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    address public asset;
+    struct StakingInfo {
+        address asset;
+        uint256 rewardPeriod;
+        uint256 rewardPerPeriod;
+        uint256 totalStaked;
+        uint256 tps;
+        uint256 initialTime;
+        uint256 lastUpdateTime;
+        uint256 periodNumber;
+    }
 
-    uint256 public rewardTime;
-
-    uint256 public rewardValue;
-
-    uint256 public rewardDistribution;
-
-    uint256 public totalStaked;
-
-    uint256 public Tps;
-
-    uint256 nextTps;
-
-    uint256 public lastUpdateTime;
+    StakingInfo public stakingInfo;
 
     EnumerableSet.AddressSet stakers;
 
@@ -35,6 +32,7 @@ contract Staking is AccessControl, Pausable {
         uint256 stake;
         uint256 rewardMissed;
         uint256 rewardGained;
+        uint256 rewardClaimed;
     }
 
     mapping(address => Staker) usersStakes;
@@ -54,7 +52,6 @@ contract Staking is AccessControl, Pausable {
     event Claimed(
         address indexed to,
         uint256 indexed claimAmount,
-        uint256 rewardDistribution,
         uint256 time
     );
 
@@ -62,89 +59,77 @@ contract Staking is AccessControl, Pausable {
         address _asset,
         uint256 _rewardTime,
         uint256 _rewardValue,
-        uint256 _Tps
+        uint256 _tps
     ) {
-        asset = _asset;
-        rewardTime = _rewardTime;
-        rewardValue = _rewardValue;
-        Tps = 0;
-        lastUpdateTime = block.timestamp;
+        stakingInfo = StakingInfo({
+            asset: _asset,
+            rewardPeriod: _rewardTime,
+            rewardPerPeriod: _rewardValue,
+            tps: _tps,
+            totalStaked: 0,
+            initialTime: block.timestamp,
+            lastUpdateTime: block.timestamp,
+            periodNumber: 1
+        });
     }
 
-    function UpdateTPS(uint256 lastAmount) private returns (uint256) {
-        uint256 testTotal = totalStaked;
-        /*if (totalStaked > lastAmount) {
-            testTotal -= lastAmount;
-        }
-
-        if (block.timestamp - lastUpdateTime > rewardTime) {
-            console.log(block.timestamp);
-            console.log(lastUpdateTime);
-            console.log(rewardValue);
-            console.log(testTotal);
-            console.log(rewardTime);
-            console.log(
-                ((((block.timestamp - lastUpdateTime)) * rewardValue) *
-                    10**18) / (testTotal * rewardTime)
-            );
-            Tps +=
-                (((block.timestamp - lastUpdateTime) * rewardValue) * 10**18) /
-                (testTotal * rewardTime);
-            console.log(Tps);
-            lastUpdateTime = block.timestamp;
-        }*/
-        if (totalStaked > 0) {
-            Tps +=
-                (((block.timestamp - lastUpdateTime) * rewardValue) * 10**18) /
-                (totalStaked * rewardTime);
-            console.log("shit");
-            console.log(block.timestamp);
-            console.log(lastUpdateTime);
-            console.log(Tps);
-            lastUpdateTime = block.timestamp;
-            return (Tps);
-        }
-    }
-
-    /*function UpdateRewardDistribution(uint256 claimAmount)
-        private
-        returns (uint256)
-    {
-        return rewardDistribution + ;
-    }*/
-
-    function Stake(uint256 amount) external whenNotPaused {
-        Tps = UpdateTPS(amount);
-        IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
-        Staker memory currentStaker;
-        uint256 _rewardMissed = (amount * Tps) / 10**18;
-
-        if (stakers.length() > 1) {
-            currentStaker.rewardMissed += _rewardMissed;
-            console.log("estimate reward missed");
-        }
-
-        if (!stakers.contains(msg.sender)) {
-            console.log("creating new object of struct");
-            stakers.add(msg.sender);
-            currentStaker = Staker({
-                stake: amount,
-                rewardMissed: _rewardMissed,
-                rewardGained: 0
-            });
-            //TODO: mb rano prisvaivayu
-            usersStakes[msg.sender] = currentStaker;
+    function updateTPS() private returns (uint256) {
+        uint256 timeFromLastUpdate = block.timestamp -
+            stakingInfo.lastUpdateTime;
+        console.log(timeFromLastUpdate);
+        if (stakingInfo.totalStaked > 0) {
+            if (timeFromLastUpdate >= stakingInfo.rewardPeriod) {
+                /*if (
+                block.timestamp >=
+                stakingInfo.initialTime +
+                    stakingInfo.rewardPeriod *
+                    stakingInfo.periodNumber
+            ) {*/
+                //console.log("shit");
+                if (timeFromLastUpdate >= stakingInfo.rewardPeriod * 2) {
+                    uint256 periodsDone = (block.timestamp -
+                        stakingInfo.lastUpdateTime) / stakingInfo.rewardPeriod;
+                    stakingInfo.tps +=
+                        ((stakingInfo.rewardPerPeriod * 10**18) /
+                            stakingInfo.totalStaked) *
+                        periodsDone;
+                } else {
+                    stakingInfo.tps += ((((timeFromLastUpdate) *
+                        stakingInfo.rewardPerPeriod) * 10**18) /
+                        (stakingInfo.totalStaked * stakingInfo.rewardPeriod));
+                }
+                stakingInfo.periodNumber++;
+                stakingInfo.lastUpdateTime = block.timestamp;
+            } else {
+                console.log("not enough time");
+            }
         } else {
-            currentStaker = usersStakes[msg.sender];
-            currentStaker.stake += amount;
+            stakingInfo.lastUpdateTime = block.timestamp;
         }
-
-        totalStaked += amount;
-
-        emit Staked(msg.sender, amount, Tps, block.timestamp);
+        return (stakingInfo.tps);
     }
 
-    function UnStake(uint256 amount, address to) external whenNotPaused {
+    function stake(uint256 amount) external whenNotPaused {
+        stakingInfo.tps = updateTPS();
+        IERC20(stakingInfo.asset).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+        Staker memory currentStaker;
+        uint256 _rewardMissed = (amount * stakingInfo.tps) / 10**18;
+
+        currentStaker = usersStakes[msg.sender];
+        currentStaker.stake += amount;
+        currentStaker.rewardMissed += _rewardMissed;
+        usersStakes[msg.sender] = currentStaker;
+
+        stakingInfo.totalStaked += amount;
+
+        emit Staked(msg.sender, amount, stakingInfo.tps, block.timestamp);
+    }
+
+    function unStake(uint256 amount, address to) external whenNotPaused {
         require(
             to != address(0),
             "Staking::UnStake: invalid address to unstake"
@@ -153,28 +138,34 @@ contract Staking is AccessControl, Pausable {
             usersStakes[msg.sender].stake >= amount,
             "Staking::UnStake: unstake amount exceeds amount at stake"
         );
-        IERC20(asset).safeTransferFrom(address(this), to, amount);
+        updateTPS();
         Staker memory currentStaker = usersStakes[msg.sender];
         currentStaker.stake -= amount;
-        currentStaker.rewardGained += amount * Tps;
+        IERC20(stakingInfo.asset).safeTransferFrom(address(this), to, amount);
+        currentStaker.rewardGained += (amount * stakingInfo.tps) / 10**18;
 
-        totalStaked -= amount;
+        stakingInfo.totalStaked -= amount;
 
-        emit UnStaked(to, amount, UpdateTPS(amount), block.timestamp);
+        emit UnStaked(to, amount, stakingInfo.tps, block.timestamp);
     }
 
     function claimRewards(address to) external whenNotPaused {
+        updateTPS();
         Staker memory currentStaker = usersStakes[msg.sender];
 
-        uint256 claimAmount = currentStaker.stake -
+        uint256 claimAmount = (currentStaker.stake * stakingInfo.tps) /
+            10**18 -
             currentStaker.rewardMissed +
-            currentStaker.rewardGained;
+            currentStaker.rewardGained -
+            currentStaker.rewardClaimed;
 
-        //uint256 newRewardDistribution = UpdateRewardDistribution(claimAmount);
+        currentStaker.rewardClaimed = claimAmount;
 
-        IERC20(asset).safeTransferFrom(address(this), to, claimAmount);
+        usersStakes[msg.sender] = currentStaker;
 
-        //emit Claimed(to, claimAmount, newRewardDistribution, block.timestamp);
+        IERC20(stakingInfo.asset).safeTransfer(to, claimAmount);
+
+        emit Claimed(to, claimAmount, block.timestamp);
     }
 
     function getStakeInfo(address addressOfStaker)
@@ -183,5 +174,9 @@ contract Staking is AccessControl, Pausable {
         returns (Staker memory)
     {
         return usersStakes[addressOfStaker];
+    }
+
+    function getStakingInfo() external view returns (StakingInfo memory) {
+        return stakingInfo;
     }
 }

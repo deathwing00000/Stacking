@@ -21,48 +21,74 @@ export type StakerStruct = {
   stake: BigNumberish;
   rewardMissed: BigNumberish;
   rewardGained: BigNumberish;
+  rewardClaimed: BigNumberish;
 };
 
-export type StakerStructOutput = [BigNumber, BigNumber, BigNumber] & {
+export type StakerStructOutput = [
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber
+] & {
   stake: BigNumber;
   rewardMissed: BigNumber;
   rewardGained: BigNumber;
+  rewardClaimed: BigNumber;
+};
+
+export type StakingInfoStruct = {
+  asset: string;
+  rewardPeriod: BigNumberish;
+  rewardPerPeriod: BigNumberish;
+  totalStaked: BigNumberish;
+  tps: BigNumberish;
+  initialTime: BigNumberish;
+  lastUpdateTime: BigNumberish;
+  periodNumber: BigNumberish;
+};
+
+export type StakingInfoStructOutput = [
+  string,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber
+] & {
+  asset: string;
+  rewardPeriod: BigNumber;
+  rewardPerPeriod: BigNumber;
+  totalStaked: BigNumber;
+  tps: BigNumber;
+  initialTime: BigNumber;
+  lastUpdateTime: BigNumber;
+  periodNumber: BigNumber;
 };
 
 export interface StakingInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "Stake(uint256)": FunctionFragment;
-    "Tps()": FunctionFragment;
-    "UnStake(uint256,address)": FunctionFragment;
-    "asset()": FunctionFragment;
     "claimRewards(address)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getStakeInfo(address)": FunctionFragment;
+    "getStakingInfo()": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "lastUpdateTime()": FunctionFragment;
     "paused()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "rewardDistribution()": FunctionFragment;
-    "rewardTime()": FunctionFragment;
-    "rewardValue()": FunctionFragment;
+    "stake(uint256)": FunctionFragment;
+    "stakingInfo()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
-    "totalStaked()": FunctionFragment;
+    "unStake(uint256,address)": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "Stake", values: [BigNumberish]): string;
-  encodeFunctionData(functionFragment: "Tps", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "UnStake",
-    values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(functionFragment: "asset", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "claimRewards",
     values: [string]
@@ -76,16 +102,16 @@ export interface StakingInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
+    functionFragment: "getStakingInfo",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "grantRole",
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
     functionFragment: "hasRole",
     values: [BytesLike, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "lastUpdateTime",
-    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
@@ -96,16 +122,9 @@ export interface StakingInterface extends utils.Interface {
     functionFragment: "revokeRole",
     values: [BytesLike, string]
   ): string;
+  encodeFunctionData(functionFragment: "stake", values: [BigNumberish]): string;
   encodeFunctionData(
-    functionFragment: "rewardDistribution",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "rewardTime",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "rewardValue",
+    functionFragment: "stakingInfo",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -113,18 +132,14 @@ export interface StakingInterface extends utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "totalStaked",
-    values?: undefined
+    functionFragment: "unStake",
+    values: [BigNumberish, string]
   ): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "Stake", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "Tps", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "UnStake", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "asset", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "claimRewards",
     data: BytesLike
@@ -137,38 +152,31 @@ export interface StakingInterface extends utils.Interface {
     functionFragment: "getStakeInfo",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "lastUpdateTime",
+    functionFragment: "getStakingInfo",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceRole",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "stake", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "rewardDistribution",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "rewardTime", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "rewardValue",
+    functionFragment: "stakingInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "totalStaked",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "unStake", data: BytesLike): Result;
 
   events: {
-    "Claimed(address,uint256,uint256,uint256)": EventFragment;
+    "Claimed(address,uint256,uint256)": EventFragment;
     "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
@@ -189,13 +197,8 @@ export interface StakingInterface extends utils.Interface {
 }
 
 export type ClaimedEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber],
-  {
-    to: string;
-    claimAmount: BigNumber;
-    rewardDistribution: BigNumber;
-    time: BigNumber;
-  }
+  [string, BigNumber, BigNumber],
+  { to: string; claimAmount: BigNumber; time: BigNumber }
 >;
 
 export type ClaimedEventFilter = TypedEventFilter<ClaimedEvent>;
@@ -273,21 +276,6 @@ export interface Staking extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    Stake(
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    Tps(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    UnStake(
-      amount: BigNumberish,
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    asset(overrides?: CallOverrides): Promise<[string]>;
-
     claimRewards(
       to: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -300,6 +288,10 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[StakerStructOutput]>;
 
+    getStakingInfo(
+      overrides?: CallOverrides
+    ): Promise<[StakingInfoStructOutput]>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -311,8 +303,6 @@ export interface Staking extends BaseContract {
       account: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    lastUpdateTime(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -328,36 +318,48 @@ export interface Staking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    rewardDistribution(overrides?: CallOverrides): Promise<[BigNumber]>;
+    stake(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
-    rewardTime(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    rewardValue(overrides?: CallOverrides): Promise<[BigNumber]>;
+    stakingInfo(
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
+        asset: string;
+        rewardPeriod: BigNumber;
+        rewardPerPeriod: BigNumber;
+        totalStaked: BigNumber;
+        tps: BigNumber;
+        initialTime: BigNumber;
+        lastUpdateTime: BigNumber;
+        periodNumber: BigNumber;
+      }
+    >;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    totalStaked(overrides?: CallOverrides): Promise<[BigNumber]>;
+    unStake(
+      amount: BigNumberish,
+      to: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  Stake(
-    amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  Tps(overrides?: CallOverrides): Promise<BigNumber>;
-
-  UnStake(
-    amount: BigNumberish,
-    to: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  asset(overrides?: CallOverrides): Promise<string>;
 
   claimRewards(
     to: string,
@@ -371,6 +373,8 @@ export interface Staking extends BaseContract {
     overrides?: CallOverrides
   ): Promise<StakerStructOutput>;
 
+  getStakingInfo(overrides?: CallOverrides): Promise<StakingInfoStructOutput>;
+
   grantRole(
     role: BytesLike,
     account: string,
@@ -382,8 +386,6 @@ export interface Staking extends BaseContract {
     account: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  lastUpdateTime(overrides?: CallOverrides): Promise<BigNumber>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
@@ -399,33 +401,48 @@ export interface Staking extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  rewardDistribution(overrides?: CallOverrides): Promise<BigNumber>;
+  stake(
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
-  rewardTime(overrides?: CallOverrides): Promise<BigNumber>;
-
-  rewardValue(overrides?: CallOverrides): Promise<BigNumber>;
+  stakingInfo(
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber
+    ] & {
+      asset: string;
+      rewardPeriod: BigNumber;
+      rewardPerPeriod: BigNumber;
+      totalStaked: BigNumber;
+      tps: BigNumber;
+      initialTime: BigNumber;
+      lastUpdateTime: BigNumber;
+      periodNumber: BigNumber;
+    }
+  >;
 
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
+  unStake(
+    amount: BigNumberish,
+    to: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    Stake(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
-
-    Tps(overrides?: CallOverrides): Promise<BigNumber>;
-
-    UnStake(
-      amount: BigNumberish,
-      to: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    asset(overrides?: CallOverrides): Promise<string>;
 
     claimRewards(to: string, overrides?: CallOverrides): Promise<void>;
 
@@ -435,6 +452,8 @@ export interface Staking extends BaseContract {
       addressOfStaker: string,
       overrides?: CallOverrides
     ): Promise<StakerStructOutput>;
+
+    getStakingInfo(overrides?: CallOverrides): Promise<StakingInfoStructOutput>;
 
     grantRole(
       role: BytesLike,
@@ -447,8 +466,6 @@ export interface Staking extends BaseContract {
       account: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    lastUpdateTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
 
@@ -464,31 +481,53 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    rewardDistribution(overrides?: CallOverrides): Promise<BigNumber>;
+    stake(amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    rewardTime(overrides?: CallOverrides): Promise<BigNumber>;
-
-    rewardValue(overrides?: CallOverrides): Promise<BigNumber>;
+    stakingInfo(
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
+        asset: string;
+        rewardPeriod: BigNumber;
+        rewardPerPeriod: BigNumber;
+        totalStaked: BigNumber;
+        tps: BigNumber;
+        initialTime: BigNumber;
+        lastUpdateTime: BigNumber;
+        periodNumber: BigNumber;
+      }
+    >;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
+    unStake(
+      amount: BigNumberish,
+      to: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
-    "Claimed(address,uint256,uint256,uint256)"(
+    "Claimed(address,uint256,uint256)"(
       to?: string | null,
       claimAmount?: BigNumberish | null,
-      rewardDistribution?: null,
       time?: null
     ): ClaimedEventFilter;
     Claimed(
       to?: string | null,
       claimAmount?: BigNumberish | null,
-      rewardDistribution?: null,
       time?: null
     ): ClaimedEventFilter;
 
@@ -561,21 +600,6 @@ export interface Staking extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    Stake(
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    Tps(overrides?: CallOverrides): Promise<BigNumber>;
-
-    UnStake(
-      amount: BigNumberish,
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    asset(overrides?: CallOverrides): Promise<BigNumber>;
-
     claimRewards(
       to: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -591,6 +615,8 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getStakingInfo(overrides?: CallOverrides): Promise<BigNumber>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -602,8 +628,6 @@ export interface Staking extends BaseContract {
       account: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    lastUpdateTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -619,39 +643,29 @@ export interface Staking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    rewardDistribution(overrides?: CallOverrides): Promise<BigNumber>;
+    stake(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
-    rewardTime(overrides?: CallOverrides): Promise<BigNumber>;
-
-    rewardValue(overrides?: CallOverrides): Promise<BigNumber>;
+    stakingInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
+    unStake(
+      amount: BigNumberish,
+      to: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    Stake(
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    Tps(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    UnStake(
-      amount: BigNumberish,
-      to: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    asset(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     claimRewards(
       to: string,
@@ -668,6 +682,8 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getStakingInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     grantRole(
       role: BytesLike,
       account: string,
@@ -679,8 +695,6 @@ export interface Staking extends BaseContract {
       account: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    lastUpdateTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -696,19 +710,22 @@ export interface Staking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    rewardDistribution(
-      overrides?: CallOverrides
+    stake(
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    rewardTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    rewardValue(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    stakingInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    totalStaked(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    unStake(
+      amount: BigNumberish,
+      to: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
   };
 }

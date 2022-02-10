@@ -48,52 +48,8 @@ describe("Unit tests", function () {
           this.TKN.address,
           600,
           this.hre.ethers.utils.parseEther("100"),
-          this.hre.ethers.utils.parseEther("0.1")
+          0
         )
-      );
-
-      await this.TKN.mint(
-        this.staker1.address,
-        this.hre.ethers.utils.parseEther("2500")
-      );
-
-      await this.TKN.balanceOf(this.staker1.address);
-
-      await this.TKN.connect(this.staker1).approve(
-        this.Staking.address,
-        this.hre.ethers.utils.parseEther("2500")
-      );
-
-      //minting also to stakers 2,3,4
-
-      await this.TKN.mint(
-        this.staker2.address,
-        this.hre.ethers.utils.parseEther("7000")
-      );
-
-      await this.TKN.connect(this.staker2).approve(
-        this.Staking.address,
-        this.hre.ethers.utils.parseEther("7000")
-      );
-
-      await this.TKN.mint(
-        this.staker3.address,
-        this.hre.ethers.utils.parseEther("3500")
-      );
-
-      await this.TKN.connect(this.staker3).approve(
-        this.Staking.address,
-        this.hre.ethers.utils.parseEther("3500")
-      );
-
-      await this.TKN.mint(
-        this.staker4.address,
-        this.hre.ethers.utils.parseEther("35000")
-      );
-
-      await this.TKN.connect(this.staker4).approve(
-        this.Staking.address,
-        this.hre.ethers.utils.parseEther("35000")
       );
     });
 
