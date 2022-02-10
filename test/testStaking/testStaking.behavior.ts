@@ -107,6 +107,13 @@ export function shouldBehaveCorrectly(): void {
     this.hre.ethers.provider.send("evm_mine", []);
 
     //console.log(await this.TKN.balanceOf(this.Staking.address));
+
+    await expect(
+      this.Staking.connect(this.staker2).claimRewards(
+        this.hre.ethers.constants.AddressZero
+      )
+    ).to.be.revertedWith("Staking::UnStake: invalid address to claim");
+
     expect(
       await this.Staking.connect(this.staker1).claimRewards(
         this.staker1.address

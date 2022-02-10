@@ -76,16 +76,13 @@ contract Staking is AccessControl, Pausable {
     function updateTPS() private returns (uint256) {
         uint256 timeFromLastUpdate = block.timestamp -
             stakingInfo.lastUpdateTime;
-        //
         if (stakingInfo.totalStaked > 0) {
-            //if (timeFromLastUpdate >= stakingInfo.rewardPeriod) {
             if (
                 block.timestamp >=
                 stakingInfo.initialTime +
                     stakingInfo.rewardPeriod *
                     (stakingInfo.periodNumber + 1)
             ) {
-                //console.log("shit");
                 if (timeFromLastUpdate >= stakingInfo.rewardPeriod * 2) {
                     uint256 periodsGone = (block.timestamp -
                         stakingInfo.lastUpdateTime) / stakingInfo.rewardPeriod;
@@ -102,9 +99,9 @@ contract Staking is AccessControl, Pausable {
                     timeFromLastUpdate /
                     stakingInfo.rewardPeriod;
                 stakingInfo.lastUpdateTime = block.timestamp;
-            } else {
+            } /*else {
                 //console.log("not enough time");
-            }
+            }*/
         } else {
             stakingInfo.lastUpdateTime = block.timestamp;
         }
@@ -119,13 +116,10 @@ contract Staking is AccessControl, Pausable {
             address(this),
             amount
         );
-        Staker memory currentStaker;
-        uint256 _rewardMissed = (amount * stakingInfo.tps) / 10**18;
-
-        currentStaker = usersStakes[msg.sender];
-        currentStaker.stake += amount;
-        currentStaker.rewardMissed += _rewardMissed;
-        usersStakes[msg.sender] = currentStaker;
+        usersStakes[msg.sender].stake += amount;
+        usersStakes[msg.sender].rewardMissed +=
+            (amount * stakingInfo.tps) /
+            10**18;
 
         stakingInfo.totalStaked += amount;
 
@@ -142,12 +136,12 @@ contract Staking is AccessControl, Pausable {
             "Staking::UnStake: unstake amount exceeds amount at stake"
         );
         updateTPS();
-        Staker memory currentStaker = usersStakes[msg.sender];
-        currentStaker.stake -= amount;
+        //Staker memory currentStaker = usersStakes[msg.sender];
+        usersStakes[msg.sender].stake -= amount;
         IERC20(stakingInfo.asset).safeTransfer(to, amount);
-        currentStaker.rewardGained += (amount * stakingInfo.tps) / 10**18;
-
-        usersStakes[msg.sender] = currentStaker;
+        usersStakes[msg.sender].rewardGained +=
+            (amount * stakingInfo.tps) /
+            10**18;
 
         stakingInfo.totalStaked -= amount;
 
@@ -156,17 +150,17 @@ contract Staking is AccessControl, Pausable {
 
     function claimRewards(address to) external whenNotPaused {
         updateTPS();
-        Staker memory currentStaker = usersStakes[msg.sender];
 
-        uint256 claimAmount = (currentStaker.stake * stakingInfo.tps) /
+        require(to != address(0), "Staking::UnStake: invalid address to claim");
+
+        uint256 claimAmount = (usersStakes[msg.sender].stake *
+            stakingInfo.tps) /
             10**18 -
-            currentStaker.rewardMissed +
-            currentStaker.rewardGained -
-            currentStaker.rewardClaimed;
+            usersStakes[msg.sender].rewardMissed +
+            usersStakes[msg.sender].rewardGained -
+            usersStakes[msg.sender].rewardClaimed;
 
-        currentStaker.rewardClaimed = claimAmount;
-
-        usersStakes[msg.sender] = currentStaker;
+        usersStakes[msg.sender].rewardClaimed = claimAmount;
 
         IERC20(stakingInfo.asset).safeTransfer(to, claimAmount);
 
@@ -180,4 +174,14 @@ contract Staking is AccessControl, Pausable {
     {
         return usersStakes[addressOfStaker];
     }
+
+    /*function _tpsIncrease(uint256) internal {}
+
+    function _isTimeForUpdate(uint256 time) internal returns (bool isTime) {
+        isTime =
+            time >=
+            stakingInfo.initialTime +
+                stakingInfo.rewardPeriod *
+                (stakingInfo.periodNumber + 1);
+    }*/
 }
