@@ -76,36 +76,39 @@ contract Staking is AccessControl, Pausable {
     function updateTPS() private returns (uint256) {
         uint256 timeFromLastUpdate = block.timestamp -
             stakingInfo.lastUpdateTime;
-        console.log(timeFromLastUpdate);
+        //
         if (stakingInfo.totalStaked > 0) {
-            if (timeFromLastUpdate >= stakingInfo.rewardPeriod) {
-                /*if (
+            //if (timeFromLastUpdate >= stakingInfo.rewardPeriod) {
+            if (
                 block.timestamp >=
                 stakingInfo.initialTime +
                     stakingInfo.rewardPeriod *
-                    stakingInfo.periodNumber
-            ) {*/
+                    (stakingInfo.periodNumber + 1)
+            ) {
                 //console.log("shit");
                 if (timeFromLastUpdate >= stakingInfo.rewardPeriod * 2) {
-                    uint256 periodsDone = (block.timestamp -
+                    uint256 periodsGone = (block.timestamp -
                         stakingInfo.lastUpdateTime) / stakingInfo.rewardPeriod;
                     stakingInfo.tps +=
                         ((stakingInfo.rewardPerPeriod * 10**18) /
                             stakingInfo.totalStaked) *
-                        periodsDone;
+                        periodsGone;
                 } else {
                     stakingInfo.tps += ((((timeFromLastUpdate) *
                         stakingInfo.rewardPerPeriod) * 10**18) /
                         (stakingInfo.totalStaked * stakingInfo.rewardPeriod));
                 }
-                stakingInfo.periodNumber++;
+                stakingInfo.periodNumber +=
+                    timeFromLastUpdate /
+                    stakingInfo.rewardPeriod;
                 stakingInfo.lastUpdateTime = block.timestamp;
             } else {
-                console.log("not enough time");
+                //console.log("not enough time");
             }
         } else {
             stakingInfo.lastUpdateTime = block.timestamp;
         }
+
         return (stakingInfo.tps);
     }
 
@@ -141,8 +144,10 @@ contract Staking is AccessControl, Pausable {
         updateTPS();
         Staker memory currentStaker = usersStakes[msg.sender];
         currentStaker.stake -= amount;
-        IERC20(stakingInfo.asset).safeTransferFrom(address(this), to, amount);
+        IERC20(stakingInfo.asset).safeTransfer(to, amount);
         currentStaker.rewardGained += (amount * stakingInfo.tps) / 10**18;
+
+        usersStakes[msg.sender] = currentStaker;
 
         stakingInfo.totalStaked -= amount;
 
@@ -174,9 +179,5 @@ contract Staking is AccessControl, Pausable {
         returns (Staker memory)
     {
         return usersStakes[addressOfStaker];
-    }
-
-    function getStakingInfo() external view returns (StakingInfo memory) {
-        return stakingInfo;
     }
 }

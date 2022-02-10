@@ -15,4 +15,13 @@ contract TestTKN is ERC20, Ownable {
     function mint(address _account, uint256 _amount) external onlyOwner {
         _mint(_account, _amount);
     }
+
+    /**
+    function that burns some amount of TKN at address
+    @param _account address where we want to burn tokens
+    @param _amount amount of TKN we want to burn
+    */
+    function burn(address _account, uint256 _amount) external onlyOwner {
+        _burn(_account, _amount);
+    }
 }

@@ -36,44 +36,12 @@ export type StakerStructOutput = [
   rewardClaimed: BigNumber;
 };
 
-export type StakingInfoStruct = {
-  asset: string;
-  rewardPeriod: BigNumberish;
-  rewardPerPeriod: BigNumberish;
-  totalStaked: BigNumberish;
-  tps: BigNumberish;
-  initialTime: BigNumberish;
-  lastUpdateTime: BigNumberish;
-  periodNumber: BigNumberish;
-};
-
-export type StakingInfoStructOutput = [
-  string,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  BigNumber
-] & {
-  asset: string;
-  rewardPeriod: BigNumber;
-  rewardPerPeriod: BigNumber;
-  totalStaked: BigNumber;
-  tps: BigNumber;
-  initialTime: BigNumber;
-  lastUpdateTime: BigNumber;
-  periodNumber: BigNumber;
-};
-
 export interface StakingInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "claimRewards(address)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getStakeInfo(address)": FunctionFragment;
-    "getStakingInfo()": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "paused()": FunctionFragment;
@@ -100,10 +68,6 @@ export interface StakingInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getStakeInfo",
     values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getStakingInfo",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "grantRole",
@@ -150,10 +114,6 @@ export interface StakingInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getStakeInfo",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getStakingInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
@@ -288,10 +248,6 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[StakerStructOutput]>;
 
-    getStakingInfo(
-      overrides?: CallOverrides
-    ): Promise<[StakingInfoStructOutput]>;
-
     grantRole(
       role: BytesLike,
       account: string,
@@ -373,8 +329,6 @@ export interface Staking extends BaseContract {
     overrides?: CallOverrides
   ): Promise<StakerStructOutput>;
 
-  getStakingInfo(overrides?: CallOverrides): Promise<StakingInfoStructOutput>;
-
   grantRole(
     role: BytesLike,
     account: string,
@@ -452,8 +406,6 @@ export interface Staking extends BaseContract {
       addressOfStaker: string,
       overrides?: CallOverrides
     ): Promise<StakerStructOutput>;
-
-    getStakingInfo(overrides?: CallOverrides): Promise<StakingInfoStructOutput>;
 
     grantRole(
       role: BytesLike,
@@ -615,8 +567,6 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getStakingInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
     grantRole(
       role: BytesLike,
       account: string,
@@ -681,8 +631,6 @@ export interface Staking extends BaseContract {
       addressOfStaker: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    getStakingInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     grantRole(
       role: BytesLike,
