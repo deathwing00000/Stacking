@@ -6,13 +6,12 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "hardhat/console.sol";
 
 contract Staking is AccessControl, Pausable {
     using SafeERC20 for IERC20;
-    using EnumerableSet for EnumerableSet.AddressSet;
 
+    // Struct for contain info about staking itself.
     struct StakingInfo {
         address asset;
         uint256 rewardPeriod;
@@ -24,10 +23,7 @@ contract Staking is AccessControl, Pausable {
         uint256 periodNumber;
     }
 
-    StakingInfo public stakingInfo;
-
-    EnumerableSet.AddressSet stakers;
-
+    // Struct for contain info about staker.
     struct Staker {
         uint256 stake;
         uint256 rewardMissed;
@@ -35,8 +31,15 @@ contract Staking is AccessControl, Pausable {
         uint256 rewardClaimed;
     }
 
+    // Conatins info about staking.
+    StakingInfo public stakingInfo;
+
+    // address of staker => object of info about staker.
     mapping(address => Staker) usersStakes;
 
+    /**
+     * This even emiited when some user stak into staking
+     */
     event Staked(
         address indexed depositor,
         uint256 indexed amount,
