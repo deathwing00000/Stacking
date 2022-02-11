@@ -1,7 +1,5 @@
 # Stacking
 
-Stacking
-
 Simple staking for practice
 
 Here is an staking that can be described by that table:
