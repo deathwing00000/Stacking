@@ -10,3 +10,5 @@ https://docs.google.com/spreadsheets/d/1OI-VI5cC-ZT5oVtqgetFrJ8ZVi8ZgKgKNY6P-INz
 added view function getStakeInfo that returns info about user's stake.
 
 Tests was done according to this table.
+
+Added scripts for deploy and verify staking and test token contracts.

@@ -38,7 +38,11 @@ contract Staking is AccessControl, Pausable {
     mapping(address => Staker) usersStakes;
 
     /**
-     * This even emiited when some user stak into staking
+     * This even emiited when some user stak into staking.
+     * @param depositor Address from which deposit in staking was made.
+     * @param amount Amount of token that was deposited in staking.
+     * @param newTps New token per share value.
+     * @param time Timestamp of stake.
      */
     event Staked(
         address indexed depositor,
@@ -46,28 +50,48 @@ contract Staking is AccessControl, Pausable {
         uint256 newTps,
         uint256 time
     );
+    /**
+     * This even emiited when user unstake amount from staking.
+     * @param to The address to which the transfer will be made.
+     * @param amount Amount of token that will be send.
+     * @param newTps New token per share value.
+     * @param time Timestamp of unstake.
+     */
     event UnStaked(
         address indexed to,
         uint256 indexed amount,
         uint256 newTps,
         uint256 time
     );
+    /**
+     * This even emiited when user claims his rewards.
+     * @param to The address to which rewards will be send.
+     * @param claimAmount Amount of rewards that will be send.
+     * @param time Timestamp of claim.
+     */
     event Claimed(
         address indexed to,
         uint256 indexed claimAmount,
         uint256 time
     );
 
+    /**
+     * Constructor for deploy contract at blockchain.
+     * @param _asset Address of asset.
+     * @param _rewardPeriod Period after rewards which rewards will be distributed.
+     * @param _rewardPerPeriod Amount of token that will be distributed per period.
+     * @param _tps Start value of token per share.
+     */
     constructor(
         address _asset,
-        uint256 _rewardTime,
-        uint256 _rewardValue,
+        uint256 _rewardPeriod,
+        uint256 _rewardPerPeriod,
         uint256 _tps
     ) {
         stakingInfo = StakingInfo({
             asset: _asset,
-            rewardPeriod: _rewardTime,
-            rewardPerPeriod: _rewardValue,
+            rewardPeriod: _rewardPeriod,
+            rewardPerPeriod: _rewardPerPeriod,
             tps: _tps,
             totalStaked: 0,
             initialTime: block.timestamp,
@@ -76,7 +100,94 @@ contract Staking is AccessControl, Pausable {
         });
     }
 
-    function updateTPS() private returns (uint256) {
+    /**
+     * Function that deposits amount of token at staking.
+     * @param amount Amount of token to be deposited.
+     */
+    function stake(uint256 amount) external whenNotPaused {
+        _updateTPS();
+        IERC20(stakingInfo.asset).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+        usersStakes[msg.sender].stake += amount;
+        usersStakes[msg.sender].rewardMissed +=
+            (amount * stakingInfo.tps) /
+            10**18;
+
+        stakingInfo.totalStaked += amount;
+
+        emit Staked(msg.sender, amount, stakingInfo.tps, block.timestamp);
+    }
+
+    /**
+     * Function that unstake amount of user's stake from staking.
+     * @param amount Amount of token to be unstaked.
+     * @param to Address at which unstaked amount will be transferred.
+     */
+    function unStake(uint256 amount, address to) external whenNotPaused {
+        require(
+            to != address(0),
+            "Staking::UnStake: invalid address to unstake"
+        );
+        require(
+            usersStakes[msg.sender].stake >= amount,
+            "Staking::UnStake: unstake amount exceeds amount at stake"
+        );
+        _updateTPS();
+        usersStakes[msg.sender].stake -= amount;
+        IERC20(stakingInfo.asset).safeTransfer(to, amount);
+        usersStakes[msg.sender].rewardGained +=
+            (amount * stakingInfo.tps) /
+            10**18;
+
+        stakingInfo.totalStaked -= amount;
+
+        emit UnStaked(to, amount, stakingInfo.tps, block.timestamp);
+    }
+
+    /**
+     * Function that claims user's rewards from staking contract.
+     * @param to Address at which claimed amount will be transferred.
+     */
+    function claimRewards(address to) external whenNotPaused {
+        _updateTPS();
+
+        require(to != address(0), "Staking::UnStake: invalid address to claim");
+
+        uint256 claimAmount = (usersStakes[msg.sender].stake *
+            stakingInfo.tps) /
+            10**18 -
+            usersStakes[msg.sender].rewardMissed +
+            usersStakes[msg.sender].rewardGained -
+            usersStakes[msg.sender].rewardClaimed;
+
+        usersStakes[msg.sender].rewardClaimed = claimAmount;
+
+        IERC20(stakingInfo.asset).safeTransfer(to, claimAmount);
+
+        emit Claimed(to, claimAmount, block.timestamp);
+    }
+
+    /**
+     * View function that returns info about user's stake.
+     * @param addressOfStaker Address of staker which info we want to see.
+     */
+    function getStakeInfo(address addressOfStaker)
+        external
+        view
+        returns (Staker memory)
+    {
+        return usersStakes[addressOfStaker];
+    }
+
+    /**
+     * Function that upates token per share value.
+     *
+     * It calls at start of stake unStake and claimRewards functions.
+     */
+    function _updateTPS() private returns (uint256) {
         uint256 timeFromLastUpdate = block.timestamp -
             stakingInfo.lastUpdateTime;
         if (stakingInfo.totalStaked > 0) {
@@ -111,80 +222,4 @@ contract Staking is AccessControl, Pausable {
 
         return (stakingInfo.tps);
     }
-
-    function stake(uint256 amount) external whenNotPaused {
-        stakingInfo.tps = updateTPS();
-        IERC20(stakingInfo.asset).safeTransferFrom(
-            msg.sender,
-            address(this),
-            amount
-        );
-        usersStakes[msg.sender].stake += amount;
-        usersStakes[msg.sender].rewardMissed +=
-            (amount * stakingInfo.tps) /
-            10**18;
-
-        stakingInfo.totalStaked += amount;
-
-        emit Staked(msg.sender, amount, stakingInfo.tps, block.timestamp);
-    }
-
-    function unStake(uint256 amount, address to) external whenNotPaused {
-        require(
-            to != address(0),
-            "Staking::UnStake: invalid address to unstake"
-        );
-        require(
-            usersStakes[msg.sender].stake >= amount,
-            "Staking::UnStake: unstake amount exceeds amount at stake"
-        );
-        updateTPS();
-        //Staker memory currentStaker = usersStakes[msg.sender];
-        usersStakes[msg.sender].stake -= amount;
-        IERC20(stakingInfo.asset).safeTransfer(to, amount);
-        usersStakes[msg.sender].rewardGained +=
-            (amount * stakingInfo.tps) /
-            10**18;
-
-        stakingInfo.totalStaked -= amount;
-
-        emit UnStaked(to, amount, stakingInfo.tps, block.timestamp);
-    }
-
-    function claimRewards(address to) external whenNotPaused {
-        updateTPS();
-
-        require(to != address(0), "Staking::UnStake: invalid address to claim");
-
-        uint256 claimAmount = (usersStakes[msg.sender].stake *
-            stakingInfo.tps) /
-            10**18 -
-            usersStakes[msg.sender].rewardMissed +
-            usersStakes[msg.sender].rewardGained -
-            usersStakes[msg.sender].rewardClaimed;
-
-        usersStakes[msg.sender].rewardClaimed = claimAmount;
-
-        IERC20(stakingInfo.asset).safeTransfer(to, claimAmount);
-
-        emit Claimed(to, claimAmount, block.timestamp);
-    }
-
-    function getStakeInfo(address addressOfStaker)
-        external
-        view
-        returns (Staker memory)
-    {
-        return usersStakes[addressOfStaker];
-    }
-
-    /*function _tpsIncrease(uint256) internal {}
-
-    function _isTimeForUpdate(uint256 time) internal returns (bool isTime) {
-        isTime =
-            time >=
-            stakingInfo.initialTime +
-                stakingInfo.rewardPeriod *
-                (stakingInfo.periodNumber + 1);
-    }*/
 }
