@@ -152,9 +152,9 @@ contract Staking is AccessControl, Pausable {
      * @param to Address at which claimed amount will be transferred.
      */
     function claimRewards(address to) external whenNotPaused {
-        _updateTPS();
-
         require(to != address(0), "Staking::UnStake: invalid address to claim");
+
+        _updateTPS();
 
         uint256 claimAmount = (usersStakes[msg.sender].stake *
             stakingInfo.tps) /
@@ -187,7 +187,7 @@ contract Staking is AccessControl, Pausable {
      *
      * It calls at start of stake unStake and claimRewards functions.
      */
-    function _updateTPS() private returns (uint256) {
+    function _updateTPS() private {
         uint256 timeFromLastUpdate = block.timestamp -
             stakingInfo.lastUpdateTime;
         if (stakingInfo.totalStaked > 0) {
@@ -219,7 +219,5 @@ contract Staking is AccessControl, Pausable {
         } else {
             stakingInfo.lastUpdateTime = block.timestamp;
         }
-
-        return (stakingInfo.tps);
     }
 }
